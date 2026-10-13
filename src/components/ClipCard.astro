@@ -1,0 +1,32 @@
+---
+/** A video tile with a bold label and an optional caption (e.g. the text prompt). */
+import Video from "./Video.astro";
+interface Props {
+  src: string;
+  webm?: string;
+  poster?: string;
+  label?: string;
+  caption?: string;
+  aspect?: "video" | "square" | "auto";
+  tag?: string; // small pill in the corner, e.g. "G1" or "H1-2"
+}
+const { src, webm, poster, label, caption, aspect = "square", tag } = Astro.props;
+---
+
+<figure class="not-prose m-0 flex flex-col gap-2">
+  <div class="relative overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+    <Video src={src} webm={webm} poster={poster} aspect={aspect} class="rounded-none" />
+    {tag && (
+      <span class="absolute top-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium tracking-wide text-white">
+        {tag}
+      </span>
+    )}
+  </div>
+  {(label || caption) && (
+    <figcaption class="px-0.5 text-sm leading-snug">
+      {label && <span class="font-semibold text-zinc-900 dark:text-zinc-100">{label}</span>}
+      {label && caption && <span class="text-zinc-400"> · </span>}
+      {caption && <span class="text-zinc-600 dark:text-zinc-400">{caption}</span>}
+    </figcaption>
+  )}
+</figure>

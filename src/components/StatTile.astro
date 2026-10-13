@@ -1,0 +1,19 @@
+---
+/** Headline number: "8.9 → 0.6 cm" with a short label underneath. */
+interface Props {
+  from?: string;
+  to: string;
+  unit?: string;
+  label: string;
+}
+const { from, to, unit = "", label } = Astro.props;
+---
+
+<div class="not-prose flex flex-col items-center gap-1 rounded-xl bg-white px-4 py-5 text-center shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-700">
+  <div class="flex items-baseline gap-2 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-4xl">
+    {from && <span class="text-xl font-normal text-zinc-400 line-through decoration-rose-400/70 decoration-2 sm:text-2xl">{from}</span>}
+    <span class="text-emerald-700 dark:text-emerald-400">{to}</span>
+    {unit && <span class="text-base font-normal text-zinc-500">{unit}</span>}
+  </div>
+  <div class="text-sm text-zinc-600 dark:text-zinc-400">{label}</div>
+</div>

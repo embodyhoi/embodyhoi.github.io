@@ -1,0 +1,10 @@
+---
+/** One-line takeaway box used under figures/tables. */
+interface Props { title?: string }
+const { title = "Takeaway" } = Astro.props;
+---
+
+<div class="my-6 rounded-xl border-l-4 border-rose-500 bg-rose-50 px-5 py-3 text-[0.95em] dark:bg-rose-950/30 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+  <span class="mr-2 font-semibold tracking-wide text-rose-700 uppercase dark:text-rose-300 text-xs">{title}</span>
+  <slot />
+</div>

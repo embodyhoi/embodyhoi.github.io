@@ -1,0 +1,72 @@
+---
+/**
+ * Lazy, autoplaying, muted loop. The video only plays while it is on screen
+ * (IntersectionObserver), so a page with many clips stays light. Pass
+ * `priority` for the hero clip so it starts immediately.
+ */
+import type { HTMLAttributes } from "astro/types";
+interface Props extends HTMLAttributes<"video"> {
+  src: string;
+  webm?: string;
+  poster?: string;
+  priority?: boolean;
+  aspect?: "video" | "square" | "auto";
+}
+
+const {
+  src,
+  webm,
+  poster,
+  priority = false,
+  aspect = "auto",
+  controls = false,
+  loop = true,
+  playsinline = true,
+  muted = true,
+  class: className,
+  ...videoProps
+} = Astro.props;
+
+const aspectClass =
+  aspect === "video" ? "aspect-video" : aspect === "square" ? "aspect-square" : "";
+---
+
+<video
+  class:list={["lazy-video h-auto w-full rounded-lg object-cover", aspectClass, className]}
+  poster={poster}
+  controls={controls}
+  loop={loop}
+  playsinline={playsinline}
+  muted={muted}
+  autoplay={priority}
+  preload={priority ? "auto" : "metadata"}
+  data-priority={priority ? "1" : undefined}
+  {...videoProps}
+>
+  {webm && <source src={webm} type="video/webm" />}
+  <source src={src} type="video/mp4" />
+</video>
+
+<script>
+  const videos = document.querySelectorAll<HTMLVideoElement>("video.lazy-video");
+  const tryPlay = (v: HTMLVideoElement) => {
+    v.muted = true;
+    const p = v.play();
+    if (p) p.catch(() => {});
+  };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const v = e.target as HTMLVideoElement;
+          if (e.isIntersecting) tryPlay(v);
+          else if (!v.dataset.priority) v.pause();
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+    videos.forEach((v) => io.observe(v));
+  } else {
+    videos.forEach(tryPlay);
+  }
+</script>
