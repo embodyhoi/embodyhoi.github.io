@@ -131,16 +131,13 @@ where $u_t^\star = [q_t; b]$ is the arm-plus-base IK solution for the decoded wr
 
 ## Guidance moves the wrist, not the interaction
 
-For matched prompts and seeds, guidance shifts the generated wrists by a few millimetres toward configurations the robot can reach, while the object trajectory and the grasp structure are preserved. Unguided hands are shown in cyan / green (translucent), IK-guided hands in yellow / magenta (solid), with the G1 arm configuration from the guided IK solve ghosted in grey. Rendered directly from the generator’s output, before retargeting.
+For matched prompts and seeds, guidance shifts the generated wrists toward configurations the robot can reach (median wrist shift 0.3 cm), while the object trajectory and the grasp structure are preserved. Each clip overlays both generations from the same prompt and seed: the unguided sample has magenta / yellow hands and an orange object, and the IK-guided sample (ours) has green / cyan hands and a blue object. Rendered directly from the generator’s output, before retargeting.
 
 <Wide>
 <VideoGrid cols={3}>
-  <ClipCard {...fresh("hoi_g1_00025_box_overlay_robot")} label="Open box" caption="“Both hands open box.” Guided solid, unguided translucent; ghost: the G1 arm solution the guidance optimized." />
-  <ClipCard {...fresh("hoi_g1_00010_mixer_overlay_robot")} label="Open and close mixer" caption="“Both hands open mixer and both hands close mixer.”" />
-  <ClipCard {...fresh("hoi_g1_00407_waffleiron_overlay_robot")} label="Lift waffle iron" caption="“Both hands lift waffleiron.” Guided and unguided hands nearly coincide: a thin halo is all guidance changed." />
-  <ClipCard {...fresh("hoi_g1_00167_laptop_overlay_robot")} label="Open laptop" caption="“Both hands open laptop.” Object motion is identical in both samples; only the hand tokens are guided." />
-  <ClipCard {...fresh("hoi_g1_00450_microwave_overlay_robot")} label="Lift and place microwave" caption="“Both hands lift microwave and both hands place microwave.”" />
-  <ClipCard {...fresh("hoi_g1_00616_notebook_overlay_robot")} label="Lift and open notebook" caption="“Both hands lift notebook and both hands open notebook.”" />
+  <ClipCard {...deck("hoi_overlay_box")} label="Box" caption="Opening the lid. Guided and unguided samples overlaid." />
+  <ClipCard {...deck("hoi_overlay_mixer")} label="Mixer" caption="Tilting the mixer head. Guided and unguided samples overlaid." />
+  <ClipCard {...deck("hoi_overlay_waffleiron")} label="Waffle iron" caption="“Close the waffle iron with the right hand.”" />
 </VideoGrid>
 </Wide>
 
