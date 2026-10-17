@@ -19,6 +19,7 @@ import TwoColumns from "./components/TwoColumns.astro";
 import Wide from "./components/Wide.astro";
 
 export const base = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + "/";
+export const hero = { src: `${base}videos/hero/hero_g1_box_open.mp4`, webm: `${base}videos/hero/hero_g1_box_open.webm`, poster: `${base}videos/hero/hero_g1_box_open.jpg` };
 export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}videos/deck/${n}.webm`, poster: `${base}videos/deck/${n}.jpg` });
 
 <Header
@@ -38,7 +39,9 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
     { name: "Code (soon)", url: "#", icon: "ri:github-line" },
     { name: "Video (soon)", url: "#", icon: "ri:video-line" },
   ]}
-/>
+>
+  <Video slot="background" {...hero} priority />
+</Header>
 
 <HighlightedSection>
 
@@ -75,7 +78,18 @@ A text-to-HOI generator produces human hands and object motion; it has never see
 
 ## The target robot's kinematics steer the frozen generator
 
-EmbodyHOI keeps the human-space generator frozen and lets the robot's kinematics steer sampling. One prompt, followed through the pipeline:
+EmbodyHOI keeps the human-space generator frozen and lets the robot's kinematics steer sampling.
+
+<Wide>
+<Figure>
+  <Picture slot="figure" src="../assets/figures/pipeline_icra_final.pdf" alt="EmbodyHOI pipeline: IK guidance at inference, guided motion generation, retargeting, RL agent, sim rollout" />
+  <Fragment slot="caption">
+    During flow-matching sampling, a differentiable IK module on the target humanoid scores the decoded wrist trajectories and its gradient is added to the learned velocity field. The guided samples are retargeted and a PPO policy is trained on them with decoupled arm and hand rewards. Changing the robot changes only the IK module.
+  </Fragment>
+</Figure>
+</Wide>
+
+One prompt, followed through the pipeline:
 
 <Wide>
 <div class="not-prose my-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
