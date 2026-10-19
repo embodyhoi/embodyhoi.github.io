@@ -167,16 +167,18 @@ main .katex-display {
   }
 }
 
-/* Key-claim highlight: a rose "marker" stroke behind the text, matching the site's accent. */
+/* Key-claim highlight: soft rose background, matching the site's accent. */
 mark {
-  background: linear-gradient(transparent 58%, var(--color-rose-200) 58%);
-  color: inherit;
+  background-color: var(--color-rose-100);
+  color: var(--color-rose-950);
   font-weight: 500;
-  padding: 0 0.15em;
-  border-radius: 0.15em;
+  padding: 0.05em 0.25em;
+  margin: 0 -0.12em;
+  border-radius: 0.3em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 .dark mark {
-  background: linear-gradient(transparent 58%, color-mix(in oklab, var(--color-rose-500) 45%, transparent) 58%);
+  background-color: color-mix(in oklab, var(--color-rose-500) 30%, transparent);
+  color: var(--color-rose-100);
 }
