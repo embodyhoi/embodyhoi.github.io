@@ -2,7 +2,7 @@
 title: "EmbodyHOI: Embodiment-Aware Generation of Hand–Object Interactions for Humanoid Dexterous Manipulation"
 theme: light
 favicon: favicon.png
-description: "EmbodyHOI runs the target humanoid's differentiable inverse kinematics inside the sampling loop of a frozen text-to-hand–object generator, so generated interactions are reachable before retargeting. No robot data, no retraining."
+description: "EmbodyHOI runs a differentiable inverse-kinematics solver for the target humanoid inside the sampling loop of a frozen text-to-HOI generator, so generated interactions are reachable before retargeting. One generator serves the Unitree G1 and H1-2 without retraining."
 thumbnail: thumbnail.jpg
 ---
 
@@ -10,9 +10,6 @@ import Header from "./components/Header.astro";
 import Video from "./components/Video.astro";
 import ClipCard from "./components/ClipCard.astro";
 import VideoGrid from "./components/VideoGrid.astro";
-import StatTile from "./components/StatTile.astro";
-import Callout from "./components/Callout.astro";
-import HighlightedSection from "./components/HighlightedSection.astro";
 import Figure from "./components/Figure.astro";
 import Picture from "./components/Picture.astro";
 import TwoColumns from "./components/TwoColumns.astro";
@@ -43,21 +40,20 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
   <Video slot="background" {...hero} priority />
 </Header>
 
-<HighlightedSection>
-
-<div class="not-prose mx-auto max-w-[50rem]">
-  <p class="text-xs font-semibold tracking-[0.2em] text-rose-700 uppercase">TL;DR</p>
-  <p class="mt-2 text-xl leading-snug font-medium text-zinc-900 sm:text-2xl">
-    Robot reachability should constrain hand–object interaction trajectories <em>while they are being generated</em>. EmbodyHOI runs a differentiable inverse-kinematics solver for a specific humanoid inside the sampling loop of a frozen text-to-HOI generator and jointly optimizes where the robot stands. Guidance acts only at inference, so one generator trained on human hand poses transfers across humanoids without retraining.
-  </p>
-  <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-    <StatTile from="8.9" to="0.6" unit="cm" label="retargeted wrist error on the G1" />
-    <StatTile from="68" to="79" unit="%" label="task success · 50 random G1 tasks" />
-    <StatTile from="62" to="76" unit="%" label="task success · four-task H1-2 suite" />
-  </div>
+<Wide>
+<div class="mx-auto max-w-6xl">
+<Figure>
+  <Picture slot="figure" src="../assets/figures/teaser_final_icra_v2.pdf" alt="EmbodyHOI teaser: an ARCTIC human demonstration, an unguided versus IK-guided reference on the Unitree G1, and policies on the G1 and H1-2 manipulating a mixer, waffle iron and box" priority />
+  <Fragment slot="caption">
+    <span class="mx-auto block max-w-[50rem]">EmbodyHOI steers a human-space HOI generator toward motions that a specific humanoid can reach. During sampling, a differentiable IK solve on the target robot scores the wrist trajectories and feeds its gradient back into the sampler while the robot's base placement is optimized jointly. The generator is never retrained, so the same model and the same IK objective serve the Unitree G1 and H1-2.</span>
+  </Fragment>
+</Figure>
 </div>
+</Wide>
 
-</HighlightedSection>
+## Abstract
+
+Humanoid dexterous manipulation needs reference motions that are both semantically rich and kinematically feasible for the target robot. Text-conditioned hand–object interaction (HOI) generators supply diverse, language-specified demonstrations, but they synthesize motion in human (MANO) space. The embodiment gap is therefore deferred to post-hoc retargeting, where trajectories deployed on the robot can fail to maintain contact with objects and also degrade policy learning. Our key idea is that *robot reachability* should constrain the interaction trajectories *while they are being generated*. We present EmbodyHOI, which runs a differentiable inverse-kinematics (IK) solver for a specific humanoid embodiment inside the sampling loop of a frozen flow-matching HOI trajectory generator. We feed back gradients from the embodiment-aware IK solver into the HOI sampler and jointly optimize the position of the humanoid with respect to the object. Because guidance acts only at inference, one HOI trajectory generator trained on human hand poses transfers across humanoid embodiments without retraining. On ARCTIC trajectories with two contrasting humanoids (Unitree G1 and H1-2), our proposed guidance-based method cuts the retargeted wrist error from 8.9 cm to 0.6 cm while leaving text-to-HOI generation quality intact, and raises task success from 68% to 79% on 50 random G1 tasks and from 62% to 76% on a four-task H1-2 suite. Critically, cheaper alternatives for bridging the embodiment gap fail to beat EmbodyHOI. Post-hoc wrist refinement and compute-matched best-of-N selection both reach *lower* IK energy than our guidance yet train worse policies.
 
 ## Video
 
@@ -71,45 +67,29 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
     allowfullscreen></iframe>
 </div>
 
-## Abstract
+## Method
 
-Humanoid dexterous manipulation needs reference motions that are both semantically rich and kinematically feasible for the target robot. Text-conditioned hand–object interaction (HOI) generators supply diverse, language-specified demonstrations, but they synthesize motion in human (MANO) space. The embodiment gap is therefore deferred to post-hoc retargeting, where trajectories deployed on the robot can fail to maintain contact with objects and also degrade policy learning. Our key idea is that *robot reachability* should constrain the interaction trajectories *while they are being generated*. We present EmbodyHOI, which runs a differentiable inverse-kinematics (IK) solver for a specific humanoid embodiment inside the sampling loop of a frozen flow-matching HOI trajectory generator. We feed back gradients from the embodiment-aware IK solver into the HOI sampler and jointly optimize the position of the humanoid with respect to the object. Because guidance acts only at inference, one HOI trajectory generator trained on human hand poses transfers across humanoid embodiments without retraining. On ARCTIC trajectories with two contrasting humanoids (Unitree G1 and H1-2), our proposed guidance-based method cuts the retargeted wrist error from 8.9 cm to 0.6 cm while leaving text-to-HOI generation quality intact, and raises task success from 68% to 79% on 50 random G1 tasks and from 62% to 76% on a four-task H1-2 suite. Critically, cheaper alternatives for bridging the embodiment gap fail to beat EmbodyHOI. Post-hoc wrist refinement and compute-matched best-of-N selection both reach *lower* IK energy than our guidance yet train worse policies.
-
-## The embodiment gap only surfaces after the interaction is committed
-
-Hand-centric HOI generators are the natural source of dexterous references because they model finger–object contact, but they generate in MANO space with no term that couples the wrist to a robot's kinematic chain. This mismatch only surfaces during retargeting, after the finger and object motions are committed, and the tracking policy inherits wrist targets that the arm cannot reach. Prior work resolves this on either side of generation: training the motion prior in robot space yields one generator per robot, and repairing a generated human motion afterwards only makes delta modifications that cannot always rectify unreachable wrist trajectories.
-
-<TwoColumns>
-  <Fragment slot="left">
-    <ClipCard {...deck("human_demo_box")} label="Human demonstration" caption="HOI generators synthesize hands and object motion in human (MANO) space, with no notion of the robot that will execute it." tag="input" />
-  </Fragment>
-  <Fragment slot="right">
-    <ClipCard {...deck("g1_box_unguided_ref")} label="Unguided reference on the G1" caption="After retargeting, the tracking policy inherits wrist targets that the arm cannot reach. Policies trained on unguided references reach 68% success on 50 random tasks." tag="unguided · 68%" />
-  </Fragment>
-</TwoColumns>
-
-## Keep the generator frozen, make its samples embodiment-aware during generation
-
-EmbodyHOI keeps a frozen MANO HOI generator (MAD-HOI) as a reusable motion prior and makes its samples embodiment-aware during generation. Inside every ODE step of the flow-matching sampler, we decode the current wrist trajectories, solve a differentiable IK problem on the target humanoid, and add the gradient of the IK residual (the IK energy) to the learned velocity field, in the manner of classifier guidance. A wrist correction made in one unmasking step conditions the finger and object tokens generated in later ones, so the interaction re-forms around the corrected wrist instead of being patched afterward.
+EmbodyHOI makes a frozen HOI generator embodiment-aware at inference. Inside every unmasking step of the generator, a differentiable IK solve on the target humanoid scores the decoded wrist trajectories and places the robot's base, and the gradient of the resulting IK energy is added to the flow-matching velocity field of the hand tokens. Finger and object tokens generated in later steps therefore form around reachable wrists. We retarget the guided sample and train a PPO tracking policy on it with decoupled arm and hand rewards. Changing the robot changes only the IK module.
 
 <Wide>
+<div class="mx-auto max-w-6xl">
 <Figure>
   <Picture slot="figure" src="../assets/figures/pipeline_icra_final.pdf" alt="EmbodyHOI pipeline: IK guidance at inference, guided motion generation, retargeting, RL agent, sim rollout" />
   <Fragment slot="caption">
-    Inside every unmasking step of the masked autoregressive generator, a differentiable IK solve on the target humanoid scores the decoded wrist trajectories and places the robot's base; the gradient of the resulting IK energy is added to the flow-matching velocity field of the hand tokens, so the finger and object tokens generated in later steps form around reachable wrists. The guided sample is retargeted and a PPO tracking policy is trained on it with decoupled arm and hand rewards. Changing the robot changes only the IK module.
+    <span class="mx-auto block max-w-[50rem]">Guidance runs inside sampling, so reachability is imposed while the interaction is still being generated. Retargeting and policy learning then operate on a reference the arm can follow.</span>
   </Fragment>
 </Figure>
+</div>
 </Wide>
 
-One prompt, followed through the pipeline:
-
 <Wide>
+<div class="mx-auto max-w-6xl">
 <div class="not-prose my-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
   <div class="flex flex-col gap-2">
     <div class="flex flex-col justify-center gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-center sm:aspect-square">
       <p class="text-xs font-semibold tracking-wide text-rose-700 uppercase">Text prompt + target humanoid</p>
       <p class="rounded-md border border-zinc-300 bg-white px-3 py-3 text-base leading-snug text-zinc-800 italic">“Close the waffle iron with the right hand.”</p>
-      <p class="text-sm text-zinc-500">The generator's weights are never updated; only the IK module knows the robot.</p>
+      <p class="text-sm text-zinc-500">Only the IK module knows the robot.</p>
     </div>
     <p class="px-0.5 text-sm font-semibold text-zinc-900">1 · Condition</p>
   </div>
@@ -117,35 +97,53 @@ One prompt, followed through the pipeline:
     <div class="overflow-hidden rounded-lg border border-rose-300 bg-zinc-50 shadow-sm">
       <Video {...deck("hoi_overlay_waffleiron")} aspect="square" class="rounded-none" />
     </div>
-    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">2 · Guided generation</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">IK-guided sample overlaid on the seed-matched unguided sample. Object tokens receive no gradient, so the object motion is identical.</span></p>
+    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">2 · Guided generation</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">Guided sample overlaid on the seed-matched unguided sample. Object tokens receive no gradient.</span></p>
   </div>
   <div class="flex flex-col gap-2">
     <div class="flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <img src={`${base}images/retargeted_waffleiron.png`} alt="Retargeted waffle-iron motion on the Unitree G1" class="h-full w-auto object-contain" loading="lazy" />
     </div>
-    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">3 · Retarget</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">PyRoki solves the guided wrists to arm joints from the optimized base; dex-retargeting maps MANO fingers to the XHand.</span></p>
+    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">3 · Retarget</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">Guided wrists solved to arm joints from the optimized base; MANO fingers mapped to the XHand.</span></p>
   </div>
   <div class="flex flex-col gap-2">
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 shadow-sm">
       <Video {...deck("g1_waffleiron_close_right")} aspect="square" class="rounded-none" />
     </div>
-    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">4 · Track with RL</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">PPO tracking policy trained in Genesis on the retargeted reference (about 4 h on one RTX 4090).</span></p>
+    <p class="px-0.5 text-sm leading-snug"><span class="font-semibold text-zinc-900">4 · Track with RL</span><span class="text-zinc-400"> · </span><span class="text-zinc-600">PPO tracking policy trained on the retargeted reference.</span></p>
   </div>
+</div>
 </div>
 </Wide>
 
-**Joint arm and base IK.** We solve for the base because a fixed base makes reachability a property of the trajectory alone: a feasible interaction performed from the wrong standing position is then indistinguishable from an infeasible one, and fixed-base IK rejects both. At each timestep the solve optimizes the arm joints together with a base translation, and because the base is fixed during execution, the per-timestep estimates are averaged into a single execution pose that becomes the root prior for the next unmasking step.
+## Guided references train better policies
 
-$$
-\dot{x} \;=\; v_\theta(x, t, z)\; -\; w\,\nabla_{x} E(x), \qquad
-E(x) = \frac{1}{T}\sum_{t=1}^{T} \big\| r\big(u_t^\star(x)\big) \big\|^2,
-$$
+Policies trained on guided references succeed on 79% of 50 randomly drawn G1 tasks, against 68% for unguided references. The gain concentrates where reachability is poor: on the 10 worst-conditioned tasks, success rises from 57.9% to 82.1%.
 
-where $u_t^\star = [q_t; b_t]$ is the arm-plus-base solution of a Levenberg–Marquardt solve (10 iterations) for the decoded wrist targets at time $t$, and $r(\cdot)$ stacks the wrist pose residual with a root prior, object clearance, a rest-pose prior, joint-limit, smoothness and manipulability terms. Gradients are taken implicitly through the solver in JAX and bridged to PyTorch; they are zeroed on object tokens, so the generated object trajectory and articulation are bit-identical between a guided sample and its seed-matched unguided sample. All weights are set once and shared by both embodiments, both generators and all tasks. Guidance costs 32× a native sample (5 s to 160 s on an A100), paid once per reference.
+<Wide>
+<div class="mx-auto max-w-6xl">
+<VideoGrid cols={4}>
+  <ClipCard {...deck("g1_close_box_both")} label="Close box" caption="“Close box with both hands.”" tag="G1" />
+  <ClipCard {...deck("g1_microwave_close_open_left")} label="Microwave" caption="“Close and open microwave with left hand.”" tag="G1" />
+  <ClipCard {...deck("g1_mixer_open_close_left")} label="Mixer" caption="“Open and close mixer with left hand.”" tag="G1" />
+  <ClipCard {...deck("g1_microwave_pick_place_both")} label="Pick and place" caption="“Pick and place microwave with both hands.”" tag="G1" />
+</VideoGrid>
+</div>
+</Wide>
 
-## Guidance does not degrade the prior
+Only the reference differs between the two policies below. Retargeting, rewards and PPO settings are identical.
 
-Same prompt and seed, guided sample overlaid on the unguided one. Unguided hands are cyan and green, IK-guided hands yellow and magenta. Guidance moves the wrists of the seed-matched sample by 0.3 cm (median) and leaves penetration and contact unchanged; the object trajectory is identical because object tokens are never guided.
+<TwoColumns>
+  <Fragment slot="left">
+    <ClipCard {...deck("g1_box_unguided_ref")} label="Unguided reference" caption="The policy inherits wrist targets that the arm cannot reach." tag="unguided" />
+  </Fragment>
+  <Fragment slot="right">
+    <ClipCard {...deck("g1_box_guided_ref")} label="IK-guided reference (ours)" caption="Same prompt and seed; the wrists were corrected during sampling." tag="ours" />
+  </Fragment>
+</TwoColumns>
+
+## Guidance corrects the wrists and keeps the interaction
+
+Guidance moves the wrists of the seed-matched sample by 0.3 cm (median) and leaves penetration, contact and the object trajectory unchanged. Generation quality is intact on the same 400 ARCTIC test prompts (FID 0.545 vs. 0.667 unguided), while the G1's wrist tracking error after retargeting falls from 8.9 cm and 20° to 0.6 cm and 4°.
 
 <VideoGrid cols={3}>
   <ClipCard {...deck("hoi_overlay_box")} label="Box" caption="“Both hands open box.”" />
@@ -153,21 +151,16 @@ Same prompt and seed, guided sample overlaid on the unguided one. Unguided hands
   <ClipCard {...deck("hoi_overlay_waffleiron")} label="Waffle iron" caption="“Close the waffle iron with the right hand.”" />
 </VideoGrid>
 
-On the same 400 ARCTIC test prompts, guided samples have lower FID than unguided (0.545 vs. 0.667), better top-3 retrieval, unchanged contact ratio and diversity, lower penetration and marginally higher KID. Guidance instead removes the residual error that survives retargeting: it lowers the IK energy on 83% of prompts, and the G1's wrist tracking error after retargeting falls from 8.9 cm and 20° to 0.6 cm and 4°.
+<p class="text-sm text-zinc-500">Guided sample overlaid on the seed-matched unguided sample. Unguided hands are cyan and green; IK-guided hands are yellow and magenta.</p>
 
-| | FID ↓ | KID ↓ | Diversity ↑ | Top-3 ↑ | Contact % ↑ | Pen. &lt;1 cm % ↓ | Wrist err (cm) ↓ | Wrist err (°) ↓ |
-|---|---|---|---|---|---|---|---|---|
-| Unguided | 0.667 | **0.001** | 19.77 | 0.852 | **83.5** | 12.2 | 8.9 | 20.2 |
-| **IK-guided (ours)** | **0.545** | 0.003 | **19.85** | **0.872** | 83.1 | **11.5** | **0.6** | **4.0** |
+## Lower IK energy does not mean a better reference
 
-## IK energy is not the quantity to optimize
-
-Guidance costs 32× a native sample, so each alternative receives the same budget, the same 51 seed-matched prompts, and the same IK solver and base optimizer. Base placement is the cheapest large gain: solving for the base with a single unguided sample reduces the median energy from 2.30 to 1.89 and raises the success rate from 68.1% to 73.3% at no sampling cost. Guidance adds a smaller, consistent correction on top, lowering the energy of the seed-matched sample on 40 of the 51 prompts and raising success to 79.7%.
+Guidance during sampling trains the best policies, although two cheaper alternatives reach lower IK energy. Post-hoc IK refinement reaches the lowest energy but moves the wrists by 33 cm after the fingers and object are fixed, and success collapses to 32.8%. Compute-matched best-of-32 selection also beats guidance on energy, yet its policies succeed 5.7 points less often, because selection returns a different interaction instead of correcting the requested one.
 
 <div class="mx-auto max-w-xl">
 <Figure>
   <Picture slot="figure" src="../assets/figures/compute_vs_success.pdf" alt="Success rate against sampling cost per reference" />
-  <Fragment slot="caption">Only guidance improves on base optimization. Success rate on the four-task G1 suite against sampling cost per reference. Base optimization lifts the unguided baseline at no sampling cost; best-of-N selection does not measurably improve on it even at 32 times the cost (0.7 ± 0.8 points).</Fragment>
+  <Fragment slot="caption">Only guidance improves on base optimization. Base optimization lifts the unguided baseline at no sampling cost; best-of-N selection does not measurably improve on it even at 32 times the cost.</Fragment>
 </Figure>
 </div>
 
@@ -180,39 +173,33 @@ Guidance costs 32× a native sample, so each alternative receives the same budge
 | Best-of-8 by energy | 8× | 1.36 | 13.2 | 73.1 ± 0.6 |
 | Best-of-32 by energy | 32× | 1.21 | 13.7 | 74.0 ± 0.6 |
 
-<Callout title="Guidance corrects, selection re-draws">
-Post-hoc refinement reaches the lowest energy of any method (0.35) but moves the wrists by 33 cm after finger and object motion are fixed, and success collapses to 32.8%. Best-of-32 selection lowers the energy further than guidance and wins on 88–94% of prompts, yet its policies succeed less often (74.0% vs. 79.7%, a gap of 5.7 ± 0.7 points at matched compute). The energy measures wrist reachability only; it is blind to whether fingers and object still form a coherent interaction around the wrists it prefers. Energy is a valid diagnostic only at fixed interaction content.
-</Callout>
+## One generator and one IK objective serve two humanoids
 
-## Guided references raise success from 68% to 79% on 50 random tasks
-
-The 50 tasks are drawn with no selection across all 11 ARCTIC objects, and we train policies from a guided and an unguided reference of each (5 seeds). Success requires the object's position, orientation and articulation to stay within 2 cm, 40° and 10° of the reference at every step of the episode. The gain concentrates where reachability is poor: on the 10 worst-conditioned tasks, selected by the minimum Jacobian singular value of the unguided reference before any policy is trained, success rises from 57.9% to 82.1%.
-
-<Wide>
-<VideoGrid cols={4}>
-  <ClipCard {...deck("g1_close_box_both")} label="Close box" caption="“Close box with both hands.”" tag="G1" />
-  <ClipCard {...deck("g1_microwave_close_open_left")} label="Microwave" caption="“Close and open microwave with left hand.”" tag="G1" />
-  <ClipCard {...deck("g1_mixer_open_close_left")} label="Mixer" caption="“Open and close mixer with left hand.”" tag="G1" />
-  <ClipCard {...deck("g1_microwave_pick_place_both")} label="Pick and place" caption="“Pick and place microwave with both hands.”" tag="G1" />
-</VideoGrid>
-</Wide>
-
-### Same task, same RL recipe: only the reference differs
-
-Retargeting, rewards and PPO settings are identical in every condition; only the reference trajectory differs.
+Switching robots changes only the IK module. From the same initial placement, guidance moves the H1-2 base (68.5 cm arms) away from the object to avoid over-extension and the G1 base (45 cm arms) closer to stay reachable. No term in the objective encodes either behaviour.
 
 <TwoColumns>
   <Fragment slot="left">
-    <ClipCard {...deck("g1_box_unguided_ref")} label="Unguided reference" caption="The tracking policy inherits wrist targets that the arm cannot reach." tag="unguided" />
+    <ClipCard {...deck("h12_base_moves_back")} label="H1-2 · base moves back" caption="The longer arms over-extend and must stand back." tag="H1-2" />
   </Fragment>
   <Fragment slot="right">
-    <ClipCard {...deck("g1_box_guided_ref")} label="IK-guided reference" caption="Same prompt, same seed, same RL recipe; wrists corrected during sampling." tag="ours" />
+    <ClipCard {...deck("g1_base_moves_closer")} label="G1 · base moves closer" caption="The shorter arms must close in. Same generator, same IK weights." tag="G1" />
   </Fragment>
 </TwoColumns>
 
-### Guidance, in-loop base placement and the decoupled reward each raise success
+The gain carries through to policy learning. Guidance raises H1-2 success on the four-task suite from 62.3% to 75.7%, a 13.4-point gain comparable to the G1's 11.6 points. The same objective also lowers the IK energy of a second generator, Text2HOI, on 48 of 50 prompts without modification.
 
-Rows A–D form a ladder on the four-task G1 suite. Swapping the ARCTIC demonstration for an unguided generated sample changes success by 1.4 points, so generation supplies diversity but not reachability. Our RL recipe with post-hoc base optimization adds 5.4 points, and IK guidance with in-loop base placement a further 5.7. Dropping base placement from the full method costs 4.0 points and dropping the arm-conditioning terms 2.9; re-solving the base inside the sampling loop rather than once after generation accounts for 2.8 of the 5.7 points. A shared imitation reward costs 5.2 points.
+<TwoColumns>
+  <Fragment slot="left">
+    <ClipCard {...deck("h12_mixer")} label="Unitree H1-2 · mixer" caption="Policy trained from an IK-guided reference." tag="H1-2" />
+  </Fragment>
+  <Fragment slot="right">
+    <ClipCard {...deck("g1_box_long")} label="Unitree G1 · box" caption="Policy trained from an IK-guided reference." tag="G1" />
+  </Fragment>
+</TwoColumns>
+
+## Each component raises success
+
+Guidance, in-loop base placement and the decoupled reward each raise success on the four-task G1 suite. Base placement is the larger contributor (4.0 vs. 2.9 points) and the cheaper one, since it adds no sampling cost. Re-solving the base inside the sampling loop rather than once after generation accounts for 2.8 of the 5.7 points that guidance adds over row C.
 
 | Reference → retargeting / RL recipe | Avg. success % |
 |---|---|
@@ -225,68 +212,20 @@ Rows A–D form a ladder on the four-task G1 suite. Swapping the ARCTIC demonstr
 | &nbsp;&nbsp;&nbsp;&nbsp;D, shared imitation reward | 74.1 ± 0.6 |
 | &nbsp;&nbsp;&nbsp;&nbsp;D, shared reward, no contact retargeting | 73.0 ± 0.4 |
 
-<div class="mx-auto max-w-2xl">
-<Figure>
-  <Picture slot="figure" src="../assets/figures/reward_design_barplot_rose.pdf" alt="Per-task success rate under four reward configurations" />
-  <Fragment slot="caption">Decoupled arm and hand imitation rewards give the highest success rate on every task. Coarse free-space reaching and contact-rich finger control differ in error scale, so a single imitation term over all 39 DoFs biases optimization toward whichever subsystem dominates the error. Averaged over the suite: imitation only 44.5%, object tracking only 58.2%, one shared imitation term 74.1%, decoupled streams 79.3%.</Fragment>
-</Figure>
-</div>
+## Limitations
 
-## The same generator and IK objective place two humanoids differently
-
-Shifting to a new robot only needs a change in the IK module. From the same initial placement, guidance moves the H1-2 base (178 cm tall, 68.5 cm arms) away from the object to avoid over-extension and the G1 base (132 cm, 45 cm arms) closer and higher to stay reachable. No term in the objective encodes either behaviour; both fall out of the same residual. On the G1, base placement alone cuts the share of near-singular samples from 2.6% to 0.2%.
+Guidance is kinematic. Better reachability does not imply dynamic or contact feasibility, and the RL stage absorbs what guidance does not model.
 
 <TwoColumns>
   <Fragment slot="left">
-    <ClipCard {...deck("h12_base_moves_back")} label="H1-2 · base moves back" caption="The longer arms over-extend and must stand back." tag="H1-2" />
+    <ClipCard {...deck("g1_mixer_slip_failure")} label="Failure case" caption="The mixer slips from the right hand during the lift." tag="failure" />
   </Fragment>
   <Fragment slot="right">
-    <ClipCard {...deck("g1_base_moves_closer")} label="G1 · base moves closer" caption="The shorter arms must close in. Same generator, same IK objective, same weights." tag="G1" />
+    - **32× slower sampler**, paid once per reference. Restricting guidance to a subset of the unmasking steps would reduce it.
+    - **Fixed lower body.** We optimize where the robot stands, not how it gets there.
+    - **Simulation only.** Real-world rollouts are the immediate next step.
   </Fragment>
 </TwoColumns>
-
-### The gain carries through to policy learning on the H1-2
-
-On the H1-2, guidance lowers the IK energy of the seed-matched sample on 46 of 50 prompts while moving the wrists by 0.3 cm, and raises success on the four-task suite from 62.3% to 75.7%, a 13.4-point gain comparable to the G1's 11.6 points despite the different arm geometry. The module is also generator-agnostic: applied without modification to Text2HOI's DDPM sampler, it lowers the IK energy on 48 of 50 ARCTIC prompts on the G1 and on all 50 on the H1-2.
-
-<TwoColumns>
-  <Fragment slot="left">
-    <ClipCard {...deck("h12_mixer")} label="Unitree H1-2 · mixer" caption="Policy trained from an IK-guided reference for the H1-2." tag="H1-2" />
-  </Fragment>
-  <Fragment slot="right">
-    <ClipCard {...deck("g1_box_long")} label="Unitree G1 · box" caption="Policy trained from an IK-guided reference for the G1." tag="G1" />
-  </Fragment>
-</TwoColumns>
-
-## Guidance is kinematic
-
-<TwoColumns>
-  <Fragment slot="left">
-    <ClipCard {...deck("g1_mixer_slip_failure")} label="Failure case" caption="The mixer slips from the right hand during the lift. Better reachability does not imply dynamic or contact feasibility; the RL stage absorbs what guidance does not model." tag="failure" />
-  </Fragment>
-  <Fragment slot="right">
-    - **Kinematic only.** Guidance does not reason about dynamics or contact. Reachable references are nonetheless closer to executable ones: guided references have a lower median peak-velocity ratio against the G1's joint limits than their unguided counterparts (0.20 vs. 0.24).
-    - **32× slower sampler.** Paid once per reference and amortized over about 4 h of policy training; restricting guidance to a subset of the unmasking steps would reduce it.
-    - **Fixed lower body.** We optimize where the robot stands, not how it gets there; integrating a locomotion controller is future work.
-    - **Simulation only.** All evaluation is in simulation on ARCTIC's articulated objects; real-world rollouts are the immediate next step.
-  </Fragment>
-</TwoColumns>
-
-<div class="mt-10 mb-6">
-<HighlightedSection>
-
-<div class="not-prose mx-auto max-w-[50rem]">
-  <p class="text-xs font-semibold tracking-[0.2em] text-rose-700 uppercase">Takeaway</p>
-  <p class="mt-2 text-xl leading-snug font-medium text-zinc-900 sm:text-2xl">A kinematic feasibility metric is a valid diagnostic only when the rest of the interaction is held fixed. Driving it down directly buys feasibility at the cost of the interaction it was meant to preserve.</p>
-  <div class="mt-6 grid grid-cols-1 gap-3 text-sm leading-snug text-zinc-700 sm:grid-cols-3">
-    <div><span class="font-semibold text-zinc-900">Impose reachability during generation.</span> Guidance edits the wrist while finger and object tokens are still being generated, so the interaction adapts to the new wrist.</div>
-    <div><span class="font-semibold text-zinc-900">Base placement is the larger and cheaper contributor.</span> 4.0 vs. 2.9 points, and it adds no sampling cost.</div>
-    <div><span class="font-semibold text-zinc-900">One objective, one set of weights, two robots.</span> The same IK objective serves the G1 and H1-2 and also lowers the IK energy of Text2HOI without modification.</div>
-  </div>
-</div>
-
-</HighlightedSection>
-</div>
 
 ## BibTeX
 
