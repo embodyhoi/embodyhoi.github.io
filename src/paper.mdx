@@ -45,7 +45,7 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
 <Figure>
   <Picture slot="figure" src="../assets/figures/teaser_final_icra_v2.pdf" alt="EmbodyHOI teaser: an ARCTIC human demonstration, an unguided versus IK-guided reference on the Unitree G1, and policies on the G1 and H1-2 manipulating a mixer, waffle iron and box" priority />
   <Fragment slot="caption">
-    <span class="mx-auto block max-w-[50rem]">EmbodyHOI steers a human-space HOI generator toward motions that a specific humanoid can reach. During sampling, a differentiable IK solve on the target robot scores the wrist trajectories and feeds its gradient back into the sampler while the robot's base placement is optimized jointly. The generator is never retrained, so the same model and the same IK objective serve the Unitree G1 and H1-2.</span>
+    <span class="mx-auto block max-w-[50rem]">EmbodyHOI steers a human-space HOI generator toward motions that a specific humanoid can reach. During sampling, a differentiable IK solve on the target robot scores the wrist trajectories and feeds its gradient back into the sampler while the robot's base placement is optimized jointly. <mark>The generator is never retrained</mark>, so the same model and the same IK objective serve the Unitree G1 and H1-2.</span>
   </Fragment>
 </Figure>
 </div>
@@ -53,7 +53,7 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
 
 ## Abstract
 
-Humanoid dexterous manipulation needs reference motions that are both semantically rich and kinematically feasible for the target robot. Text-conditioned hand–object interaction (HOI) generators supply diverse, language-specified demonstrations, but they synthesize motion in human (MANO) space. The embodiment gap is therefore deferred to post-hoc retargeting, where trajectories deployed on the robot can fail to maintain contact with objects and also degrade policy learning. Our key idea is that *robot reachability* should constrain the interaction trajectories *while they are being generated*. We present EmbodyHOI, which runs a differentiable inverse-kinematics (IK) solver for a specific humanoid embodiment inside the sampling loop of a frozen flow-matching HOI trajectory generator. We feed back gradients from the embodiment-aware IK solver into the HOI sampler and jointly optimize the position of the humanoid with respect to the object. Because guidance acts only at inference, one HOI trajectory generator trained on human hand poses transfers across humanoid embodiments without retraining. On ARCTIC trajectories with two contrasting humanoids (Unitree G1 and H1-2), our proposed guidance-based method cuts the retargeted wrist error from 8.9 cm to 0.6 cm while leaving text-to-HOI generation quality intact, and raises task success from 68% to 79% on 50 random G1 tasks and from 62% to 76% on a four-task H1-2 suite. Critically, cheaper alternatives for bridging the embodiment gap fail to beat EmbodyHOI. Post-hoc wrist refinement and compute-matched best-of-N selection both reach *lower* IK energy than our guidance yet train worse policies.
+Humanoid dexterous manipulation needs reference motions that are both semantically rich and kinematically feasible for the target robot. Text-conditioned hand–object interaction (HOI) generators supply diverse, language-specified demonstrations, but they synthesize motion in human (MANO) space. The embodiment gap is therefore deferred to post-hoc retargeting, where trajectories deployed on the robot can fail to maintain contact with objects and also degrade policy learning. Our key idea is that <mark><em>robot reachability</em> should constrain the interaction trajectories <em>while they are being generated</em></mark>. We present EmbodyHOI, which runs a differentiable inverse-kinematics (IK) solver for a specific humanoid embodiment inside the sampling loop of a frozen flow-matching HOI trajectory generator. We feed back gradients from the embodiment-aware IK solver into the HOI sampler and jointly optimize the position of the humanoid with respect to the object. Because guidance acts only at inference, one HOI trajectory generator trained on human hand poses transfers across humanoid embodiments without retraining. On ARCTIC trajectories with two contrasting humanoids (Unitree G1 and H1-2), our proposed guidance-based method cuts the retargeted wrist error from <mark>8.9 cm to 0.6 cm</mark> while leaving text-to-HOI generation quality intact, and raises task success from <mark>68% to 79%</mark> on 50 random G1 tasks and from <mark>62% to 76%</mark> on a four-task H1-2 suite. Critically, cheaper alternatives for bridging the embodiment gap fail to beat EmbodyHOI. Post-hoc wrist refinement and compute-matched best-of-N selection both reach <mark><em>lower</em> IK energy than our guidance yet train worse policies</mark>.
 
 ## Video
 
@@ -69,18 +69,7 @@ Humanoid dexterous manipulation needs reference motions that are both semantical
 
 ## Method
 
-EmbodyHOI makes a frozen HOI generator embodiment-aware at inference. Inside every unmasking step of the generator, a differentiable IK solve on the target humanoid scores the decoded wrist trajectories and places the robot's base, and the gradient of the resulting IK energy is added to the flow-matching velocity field of the hand tokens. Finger and object tokens generated in later steps therefore form around reachable wrists. We retarget the guided sample and train a PPO tracking policy on it with decoupled arm and hand rewards. Changing the robot changes only the IK module.
-
-<Wide>
-<div class="mx-auto max-w-6xl">
-<Figure>
-  <Picture slot="figure" src="../assets/figures/pipeline_icra_final.pdf" alt="EmbodyHOI pipeline: IK guidance at inference, guided motion generation, retargeting, RL agent, sim rollout" />
-  <Fragment slot="caption">
-    <span class="mx-auto block max-w-[50rem]">Guidance runs inside sampling, so reachability is imposed while the interaction is still being generated. Retargeting and policy learning then operate on a reference the arm can follow.</span>
-  </Fragment>
-</Figure>
-</div>
-</Wide>
+EmbodyHOI makes a frozen HOI generator <mark>embodiment-aware at inference</mark>. Inside every unmasking step of the generator, a differentiable IK solve on the target humanoid scores the decoded wrist trajectories and places the robot's base, and the gradient of the resulting IK energy is added to the flow-matching velocity field of the hand tokens. Finger and object tokens generated in later steps therefore form around reachable wrists. We retarget the guided sample and train a PPO tracking policy on it with decoupled arm and hand rewards. <mark>Changing the robot changes only the IK module.</mark>
 
 <Wide>
 <div class="mx-auto max-w-6xl">
@@ -117,7 +106,7 @@ EmbodyHOI makes a frozen HOI generator embodiment-aware at inference. Inside eve
 
 ## Guided references train better policies
 
-Policies trained on guided references succeed on 79% of 50 randomly drawn G1 tasks, against 68% for unguided references. The gain concentrates where reachability is poor: on the 10 worst-conditioned tasks, success rises from 57.9% to 82.1%.
+Policies trained on guided references succeed on <mark>79% of 50 randomly drawn G1 tasks, against 68%</mark> for unguided references. The gain concentrates where reachability is poor: on the 10 worst-conditioned tasks, success rises from <mark>57.9% to 82.1%</mark>.
 
 <Wide>
 <div class="mx-auto max-w-6xl">
@@ -143,7 +132,7 @@ Only the reference differs between the two policies below. Retargeting, rewards 
 
 ## Guidance corrects the wrists and keeps the interaction
 
-Guidance moves the wrists of the seed-matched sample by 0.3 cm (median) and leaves penetration, contact and the object trajectory unchanged. Generation quality is intact on the same 400 ARCTIC test prompts (FID 0.545 vs. 0.667 unguided), while the G1's wrist tracking error after retargeting falls from 8.9 cm and 20° to 0.6 cm and 4°.
+Guidance moves the wrists of the seed-matched sample by <mark>0.3 cm</mark> (median) and <mark>leaves penetration, contact and the object trajectory unchanged</mark>. Generation quality is intact on the same 400 ARCTIC test prompts (FID 0.545 vs. 0.667 unguided), while the G1's wrist tracking error after retargeting falls from <mark>8.9 cm and 20° to 0.6 cm and 4°</mark>.
 
 <VideoGrid cols={3}>
   <ClipCard {...deck("hoi_overlay_box")} label="Box" caption="“Both hands open box.”" />
@@ -155,7 +144,7 @@ Guidance moves the wrists of the seed-matched sample by 0.3 cm (median) and leav
 
 ## Lower IK energy does not mean a better reference
 
-Guidance during sampling trains the best policies, although two cheaper alternatives reach lower IK energy. Post-hoc IK refinement reaches the lowest energy but moves the wrists by 33 cm after the fingers and object are fixed, and success collapses to 32.8%. Compute-matched best-of-32 selection also beats guidance on energy, yet its policies succeed 5.7 points less often, because selection returns a different interaction instead of correcting the requested one.
+<mark>Guidance during sampling trains the best policies</mark>, although two cheaper alternatives reach lower IK energy. Post-hoc IK refinement reaches the lowest energy but moves the wrists by 33 cm after the fingers and object are fixed, and <mark>success collapses to 32.8%</mark>. Compute-matched best-of-32 selection also beats guidance on energy, yet its policies <mark>succeed 5.7 points less often</mark>, because selection returns a different interaction instead of correcting the requested one.
 
 <div class="mx-auto max-w-xl">
 <Figure>
@@ -175,7 +164,7 @@ Guidance during sampling trains the best policies, although two cheaper alternat
 
 ## One generator and one IK objective serve two humanoids
 
-Switching robots changes only the IK module. From the same initial placement, guidance moves the H1-2 base (68.5 cm arms) away from the object to avoid over-extension and the G1 base (45 cm arms) closer to stay reachable. No term in the objective encodes either behaviour.
+<mark>Switching robots changes only the IK module.</mark> From the same initial placement, guidance moves the H1-2 base (68.5 cm arms) away from the object to avoid over-extension and the G1 base (45 cm arms) closer to stay reachable. No term in the objective encodes either behaviour.
 
 <TwoColumns>
   <Fragment slot="left">
@@ -186,7 +175,7 @@ Switching robots changes only the IK module. From the same initial placement, gu
   </Fragment>
 </TwoColumns>
 
-The gain carries through to policy learning. Guidance raises H1-2 success on the four-task suite from 62.3% to 75.7%, a 13.4-point gain comparable to the G1's 11.6 points. The same objective also lowers the IK energy of a second generator, Text2HOI, on 48 of 50 prompts without modification.
+The gain carries through to policy learning. Guidance raises H1-2 success on the four-task suite from <mark>62.3% to 75.7%</mark>, a 13.4-point gain comparable to the G1's 11.6 points. The same objective also lowers the IK energy of a second generator, Text2HOI, on 48 of 50 prompts without modification.
 
 <TwoColumns>
   <Fragment slot="left">
@@ -199,7 +188,7 @@ The gain carries through to policy learning. Guidance raises H1-2 success on the
 
 ## Each component raises success
 
-Guidance, in-loop base placement and the decoupled reward each raise success on the four-task G1 suite. Base placement is the larger contributor (4.0 vs. 2.9 points) and the cheaper one, since it adds no sampling cost. Re-solving the base inside the sampling loop rather than once after generation accounts for 2.8 of the 5.7 points that guidance adds over row C.
+Guidance, in-loop base placement and the decoupled reward each raise success on the four-task G1 suite. <mark>Base placement is the larger contributor</mark> (4.0 vs. 2.9 points) and the cheaper one, since it adds no sampling cost. Re-solving the base inside the sampling loop rather than once after generation accounts for 2.8 of the 5.7 points that guidance adds over row C.
 
 | Reference → retargeting / RL recipe | Avg. success % |
 |---|---|
@@ -214,7 +203,7 @@ Guidance, in-loop base placement and the decoupled reward each raise success on 
 
 ## Limitations
 
-Guidance is kinematic. Better reachability does not imply dynamic or contact feasibility, and the RL stage absorbs what guidance does not model.
+<mark>Guidance is kinematic.</mark> Better reachability does not imply dynamic or contact feasibility, and the RL stage absorbs what guidance does not model.
 
 <TwoColumns>
   <Fragment slot="left">
