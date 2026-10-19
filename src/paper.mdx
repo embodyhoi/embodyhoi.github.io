@@ -32,7 +32,7 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
     { name: "Paper", url: `${base}embodyhoi_icra2027.pdf`, icon: "ri:file-pdf-2-line" },
     { name: "arXiv (soon)", url: "#", icon: "academicons:arxiv" },
     { name: "Code (soon)", url: "#", icon: "ri:github-line" },
-    { name: "Video", url: "https://drive.google.com/file/d/1xDQF_TLuI8f8Qfb6FFNYvRwr4PUdKzK1/view", icon: "ri:video-line" },
+    { name: "Video", url: "#video", icon: "ri:video-line" },
   ]}
 >
   <Video slot="background" {...deck("g1_close_box_both")} priority />
@@ -58,14 +58,16 @@ Humanoid dexterous manipulation needs reference motions that are both semantical
 
 ## Video
 
-<div class="not-prose mx-auto aspect-video w-full max-w-[50rem] overflow-hidden rounded-lg bg-zinc-100">
-  <iframe
-    class="h-full w-full"
-    loading="lazy"
-    src="https://drive.google.com/file/d/1xDQF_TLuI8f8Qfb6FFNYvRwr4PUdKzK1/preview"
-    title="EmbodyHOI supplementary video"
-    allow="autoplay; fullscreen"
-    allowfullscreen></iframe>
+<div class="not-prose mx-auto w-full max-w-[50rem]">
+  <video
+    class="aspect-video w-full rounded-lg bg-zinc-100"
+    controls
+    playsinline
+    preload="metadata"
+    poster={`${base}videos/supp/embodyhoi_video.jpg`}
+    title="EmbodyHOI supplementary video">
+    <source src={`${base}videos/supp/embodyhoi_video.mp4`} type="video/mp4" />
+  </video>
 </div>
 
 ## Method
