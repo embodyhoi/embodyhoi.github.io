@@ -41,11 +41,14 @@ export const deck = (n) => ({ src: `${base}videos/deck/${n}.mp4`, webm: `${base}
 <Wide>
 <div class="mx-auto max-w-6xl">
 <Figure>
-  <Picture slot="figure" src="../assets/figures/teaser_final_icra_v2.pdf" alt="EmbodyHOI teaser: an ARCTIC human demonstration, an unguided versus IK-guided reference on the Unitree G1, and policies on the G1 and H1-2 manipulating a mixer, waffle iron and box" priority />
+  <div slot="figure" class="w-full overflow-x-auto"><div class="min-w-[44rem] sm:min-w-0">
+    <Picture src="../assets/figures/teaser_final_icra_v2.pdf" alt="EmbodyHOI teaser: an ARCTIC human demonstration, an unguided versus IK-guided reference on the Unitree G1, and policies on the G1 and H1-2 manipulating a mixer, waffle iron and box" priority />
+  </div></div>
   <Fragment slot="caption">
     <span class="mx-auto block max-w-[50rem]">EmbodyHOI steers a human-space HOI generator toward motions that a specific humanoid can reach. During sampling, a differentiable IK solve on the target robot scores the wrist trajectories and feeds its gradient back into the sampler while the robot's base placement is optimized jointly. <mark>The generator is never retrained</mark>, so the same model and the same IK objective serve the Unitree G1 and H1-2.</span>
   </Fragment>
 </Figure>
+<p class="not-prose -mt-2 text-center text-xs text-zinc-400 sm:hidden">Swipe sideways to see the whole figure.</p>
 </div>
 </Wide>
 
@@ -71,12 +74,12 @@ EmbodyHOI makes a frozen HOI generator <mark>embodiment-aware at inference</mark
 
 <Wide>
 <div class="mx-auto max-w-6xl">
-<div class="not-prose my-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<div class="not-prose my-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
   <div class="flex flex-col gap-2">
-    <div class="flex flex-col justify-center gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-center sm:aspect-square">
+    <div class="flex aspect-square flex-col justify-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-center sm:gap-4 sm:p-5">
       <p class="text-xs font-semibold tracking-wide text-rose-700 uppercase">Text prompt + target humanoid</p>
-      <p class="rounded-md border border-zinc-300 bg-white px-3 py-3 text-base leading-snug text-zinc-800 italic">“Close the waffle iron with the right hand.”</p>
-      <p class="text-sm text-zinc-500">Only the IK module knows the robot.</p>
+      <p class="rounded-md border border-zinc-300 bg-white px-2 py-2 text-sm leading-snug text-zinc-800 italic sm:px-3 sm:py-3 sm:text-base">“Close the waffle iron with the right hand.”</p>
+      <p class="text-xs text-zinc-500 sm:text-sm">Only the IK module knows the robot.</p>
     </div>
     <p class="px-0.5 text-sm font-semibold text-zinc-900">1 · Condition</p>
   </div>
@@ -203,16 +206,16 @@ Guidance, in-loop base placement and the decoupled reward each raise success on 
 
 <mark>Guidance is kinematic.</mark> Better reachability does not imply dynamic or contact feasibility, and the RL stage absorbs what guidance does not model.
 
-<TwoColumns>
-  <Fragment slot="left">
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*>:first-child]:mt-0 [&>*>:last-child]:mb-0">
+  <div>
     <ClipCard {...deck("g1_mixer_slip_failure")} label="Failure case" caption="The mixer slips from the right hand during the lift." tag="failure" />
-  </Fragment>
-  <Fragment slot="right">
+  </div>
+  <div>
     - **32× slower sampler**, paid once per reference. Restricting guidance to a subset of the unmasking steps would reduce it.
     - **Fixed lower body.** We optimize where the robot stands, not how it gets there.
     - **Simulation only.** Real-world rollouts are the immediate next step.
-  </Fragment>
-</TwoColumns>
+  </div>
+</div>
 
 ## BibTeX
 

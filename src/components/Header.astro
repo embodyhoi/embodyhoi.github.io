@@ -30,6 +30,8 @@ interface Props {
 const { title, authors, conference, notes, links } = Astro.props;
 
 const hasBackground = Astro.slots.has("background");
+const institutions = new Set(authors.map((a) => a.institution ?? ""));
+const sharedInstitution = institutions.size === 1 ? [...institutions][0] : undefined;
 ---
 
 <header
@@ -49,18 +51,18 @@ const hasBackground = Astro.slots.has("background");
   }
   <div
     class:list={[
-      "relative z-10 mx-auto flex max-w-[50rem] flex-col items-center px-6 text-center",
+      "relative z-10 mx-auto flex max-w-[50rem] flex-col items-center px-6 text-center max-sm:gap-6",
       hasBackground
         ? "gap-10 text-white prose-headings:text-white [text-shadow:0_0_8px_rgba(0,0,0,0.6)]"
         : "gap-6",
     ]}
   >
     <h1 class="my-0 text-3xl font-medium sm:text-5xl">{title}</h1>
-    <div class="flex flex-row flex-wrap justify-center gap-x-8 gap-y-4">
+    <div class="flex flex-row flex-wrap justify-center gap-x-5 gap-y-2 sm:gap-x-8 sm:gap-y-4">
       {
         authors.map((author) => (
           <div class="flex flex-col items-center text-center">
-            <div class="flex flex-row text-xl">
+            <div class="flex flex-row text-lg sm:text-xl">
               {author.url ? (
                 <a class:list={[hasBackground && "not-prose text-blue-200 hover:text-blue-100 underline decoration-dashed underline-offset-4 hover:decoration-solid"]} href={author.url}>{author.name}</a>
               ) : (
@@ -75,11 +77,12 @@ const hasBackground = Astro.slots.has("background");
                 </sup>
               )}
             </div>
-            {author.institution && <div>{author.institution}</div>}
+            {author.institution && <div class:list={[sharedInstitution && "hidden sm:block"]}>{author.institution}</div>}
           </div>
         ))
       }
     </div>
+    {sharedInstitution && <div class="-mt-6 sm:hidden">{sharedInstitution}</div>}
     {conference && <div>{conference}</div>}
     {
       notes && (

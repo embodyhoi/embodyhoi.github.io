@@ -182,3 +182,11 @@ mark {
   background-color: color-mix(in oklab, var(--color-rose-500) 30%, transparent);
   color: var(--color-rose-100);
 }
+
+/* Phone: tighter section headings. */
+@media (max-width: 40rem) {
+  .prose h2 {
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+}
